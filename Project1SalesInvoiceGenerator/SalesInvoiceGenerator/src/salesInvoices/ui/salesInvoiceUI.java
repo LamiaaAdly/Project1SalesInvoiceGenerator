@@ -7,7 +7,6 @@ import salesInvoices.InvoiceItem;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -25,10 +24,8 @@ public class salesInvoiceUI extends JFrame implements ActionListener {
     private JPanel leftSidePanelChild, rightSidePanelChild1, rightSidePanelChild2;
     private JPanel southBtnPanel,southBtnPanel2 ,rightSidePanelChild;
     private JTable invoicesTable;
-    private DefaultTableModel tableMoldelInvoices;
     private int invoicesTableRowSelected;
     private String invoicesTableDirectory;
-    private int invoicesRow, itemsRow;
     private String[] invoicesTableHeaders;
     private ArrayList<Invoice> invoicesTableData;
     private  ArrayListView invoicesModel;
@@ -37,7 +34,6 @@ public class salesInvoiceUI extends JFrame implements ActionListener {
     JScrollPane scrollPane, scrollPane1;
     String InveoicesPath, itemPath, fileNameOfInvoices;
     private String[] invoiceItemsHeaders;
-    private ArrayList<InvoiceItem> invoiceItemsData;
     private ArrayListViewInvoiceItems arrayListViewItems;
     private JButton createInvoice, deleteInvoice;
     private JButton saveChanges, cancelChanges;
@@ -117,42 +113,7 @@ public class salesInvoiceUI extends JFrame implements ActionListener {
 
                     items = CSVfileHelper.LoadInvoicesItemsFromCSVFile(itemPath);
 
-                    //error management
-//                    FileInputStream fis = null;
-//
-//                    try {
-//                        fis= new FileInputStream(path);
-//                        BufferedReader reader = new BufferedReader(new InputStreamReader(fis) );
-//                        while(reader.ready()) {
-//                            String line = reader.readLine();
-//                            String[] dataCell = line.split(",");
-//                            items.add(new InvoiceItem(Integer.valueOf(dataCell[0]),
-//                                    dataCell[1],
-//                                    Double.parseDouble(dataCell[2]),
-//                                    Integer.valueOf(dataCell[3]),
-//                                    Double.parseDouble(dataCell[4])));
-//                        }
-//                    } catch (FileNotFoundException e1){
-//                        e1.printStackTrace();
-//                    }catch (IOException e1){
-//                        e1.printStackTrace();
-//                    }finally {
-//                        try{
-//                            if(fis!=null) {
-//                                fis.close();
-//                            }
-//                        }catch (IOException e1){}
-//                    }
-
-                    invoiceItems = new JTable();
-                    arrayListViewItems  =
-                            new ArrayListViewInvoiceItems(items, invoiceItemsHeaders);
-                    invoiceItemsData = items;
-                    invoiceItems.setModel(arrayListViewItems);
-                    invoiceItems.setCellSelectionEnabled(true);
-//                    invoiceItems.putClientProperty("terminateEditOnFocusLost", true);
-                    invoiceItems.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-                    scrollPane1.setViewportView(invoiceItems);
+                    createInvoiceItemsTable(items);
                 }
             }
         });
@@ -219,13 +180,7 @@ public class salesInvoiceUI extends JFrame implements ActionListener {
         invoiceTotal = new JTextField(15);
         invoiceTotal.setEnabled(false);
         double total=0;
-//        if(invoiceItemsData!=null){
-//            for(int i=0; i<invoiceItemsData.size(); i++){
-//                total += Double.parseDouble(String.valueOf(invoiceItems.getValueAt(i,4)));
-//            }
-//        }
 
-//        invoiceTotal.setText(String.valueOf(total));
         panel4.add(invoiceTotal);
         rightSidePanelChild1.add(panel4);
 
@@ -247,17 +202,6 @@ public class salesInvoiceUI extends JFrame implements ActionListener {
         addItem.addActionListener(this);
 
         rightSidePanelChild2.add(scrollPane1);
-
-//        if(invoiceItems!= null) {
-//
-//
-//            ArrayListViewInvoiceItems arrayListViewItems  =
-//                    new ArrayListViewInvoiceItems(invoiceItemsData, invoiceItemsHeaders);
-//            invoiceItems.setModel(arrayListViewItems);
-//            scrollPane1.setViewportView(invoiceItems);
-//            rightSidePanelChild2.add(invoiceItems.getTableHeader());
-//            rightSidePanelChild2.add(scrollPane1);
-//        }
 
         rightSidePanelChild.add(rightSidePanelChild2);
         rightSidePanelChild.add(addItem);
@@ -301,8 +245,7 @@ public class salesInvoiceUI extends JFrame implements ActionListener {
                 saveChanges();
                 break;
             case "cancelChanges":
-                JOptionPane.showMessageDialog(null, "Changes not saved to Invoice Items Table",
-                        "INFORMATION_MESSAGE", JOptionPane.INFORMATION_MESSAGE);
+                cancelChanges();
                 break;
             case "createInvoice":
                 createInvoice();
@@ -316,42 +259,6 @@ public class salesInvoiceUI extends JFrame implements ActionListener {
         }
     }
 
-//    private ArrayList<Invoice> loadFile(){
-//        ArrayList<Invoice> invoces = new ArrayList<>();
-//        JFileChooser fc = new JFileChooser();
-//        fc.setCurrentDirectory(new File("..\\InvoiceTables\\openInvoices"));
-//        int result = fc.showOpenDialog(this);
-//        if(result == JFileChooser.APPROVE_OPTION){
-//            String path = fc.getSelectedFile().getPath();
-//            invoicesTableDirectory = fc.getSelectedFile().getParent();
-//            String fi = fc.getName();
-//            FileInputStream fis = null;
-//
-//            try {
-//                fis= new FileInputStream(path);
-//                BufferedReader reader = new BufferedReader(new InputStreamReader(fis) );
-//                while(reader.ready()) {
-//                    String line = reader.readLine();
-//                    String[] dataCell = line.split(",");
-//                    invoces.add(new Invoice(Integer.valueOf(dataCell[0]),
-//                                            dataCell[1],
-//                                            dataCell[2],
-//                                            Double.parseDouble(dataCell[3])));
-//                }
-//            } catch (FileNotFoundException e){
-//                e.printStackTrace();
-//            }catch (IOException e){
-//                e.printStackTrace();
-//            }finally {
-//                try{
-//                    if(fis!=null) {
-//                        fis.close();
-//                    }
-//                }catch (IOException e){}
-//            }
-//        }
-//        return invoces;
-//    }
 
     private void loadFile(){
         String paths[] = CSVfileHelper.getPaths(this);
@@ -391,12 +298,27 @@ public class salesInvoiceUI extends JFrame implements ActionListener {
         invoicesModel.setValueAt(IvcustomerName,invoicesTableRowSelected,2);
         invoicesModel.setValueAt(sum,invoicesTableRowSelected,3);
 
-            //}
-//            ArrayList<InvoiceItem> items = new ArrayList<>();
-//            items = CSVfileHelper.LoadInvoicesItemsFromCSVFile(itemPath);
-//            arrayListViewItems = new ArrayListViewInvoiceItems(items,invoiceItemsHeaders);
-//            invoiceItems.setModel(arrayListViewItems);
-       // }
+    }
+    private void cancelChanges(){
+
+        JOptionPane.showMessageDialog(null, "Changes not saved to Invoice Items Table",
+                "INFORMATION_MESSAGE", JOptionPane.INFORMATION_MESSAGE);
+
+        ArrayList<InvoiceItem> items = CSVfileHelper.LoadInvoicesItemsFromCSVFile(itemPath);
+
+        createInvoiceItemsTable(items);
+
+
+    }
+
+    private void createInvoiceItemsTable(ArrayList<InvoiceItem> items){
+        invoiceItems = new JTable();
+        arrayListViewItems  =
+                new ArrayListViewInvoiceItems(items, invoiceItemsHeaders);
+        invoiceItems.setModel(arrayListViewItems);
+        invoiceItems.setCellSelectionEnabled(true);
+        invoiceItems.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        scrollPane1.setViewportView(invoiceItems);
     }
 
     private void createInvoice(){
@@ -438,11 +360,4 @@ public class salesInvoiceUI extends JFrame implements ActionListener {
         arrayListViewItems.list.add(new InvoiceItem(0, "", 0,0, 0));
         arrayListViewItems.fireTableStructureChanged();
     }
-
-//    public static void main(String[] args) {
-//        salesInvoiceUI frame= new salesInvoiceUI("Sales Invoices");
-//        frame.setVisible(true);
-//
-//    }
-
 }

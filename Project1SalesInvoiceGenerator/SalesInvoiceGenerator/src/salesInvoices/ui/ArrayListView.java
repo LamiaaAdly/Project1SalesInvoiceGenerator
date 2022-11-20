@@ -1,9 +1,6 @@
 package salesInvoices.ui;
 
 import salesInvoices.Invoice;
-import salesInvoices.InvoiceItem;
-
-import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
 
 import java.util.ArrayList;
