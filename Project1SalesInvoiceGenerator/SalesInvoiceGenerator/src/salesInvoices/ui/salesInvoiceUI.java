@@ -426,7 +426,7 @@ public class salesInvoiceUI extends JFrame implements ActionListener {
 
     }
     private void deleteInvoice(int invoicesTableRowSelected){
-        if(invoicesTableRowSelected > 0) {
+        if(invoicesTableRowSelected >= 0) {
             invoicesModel.list.remove(invoicesTableRowSelected);
             System.out.println("file removed!");
         }
